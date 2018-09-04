@@ -48,10 +48,10 @@ test('read json with loaders', async (t) => {
   let [ output3, output4 ] = read([mfs3, mfs4])
 
   t.true(output3.includes('\nmodule.exports = {"name":"Z"};"D"\n'), output3)
-  
+
   /**
    * BREAK HERE
-   * 
+   *
    * ```
    * !(function webpackMissingModule() { var e = new Error("Cannot find module '/tmp/test/fixtures/json/loaders/d.js!raw-loader!/tmp/test/fixtures/json/files/z.json'"); e.code = 'MODULE_NOT_FOUND'; throw e; }());␊
    * ```
@@ -86,7 +86,7 @@ test('read json with raw loader and one extra loader', async (t) => {
 
   /**
    * BREAK HERE
-   * 
+   *
    * ```
    * !(function webpackMissingModule() { var e = new Error("Cannot find module '/tmp/test/fixtures/json/loaders/d.js!raw-loader!/tmp/test/fixtures/json/files/z.json'"); e.code = 'MODULE_NOT_FOUND'; throw e; }());␊
    * ```
@@ -125,12 +125,39 @@ test('read json with raw loader and more than one extra loaders', async (t) => {
 
   /**
    * BREAK HERE
-   * 
+   *
    * ```
    * !(function webpackMissingModule() { var e = new Error("Cannot find module '/tmp/test/fixtures/json/loaders/d.js!raw-loader!/tmp/test/fixtures/json/files/z.json'"); e.code = 'MODULE_NOT_FOUND'; throw e; }());␊
    * ```
    */
   t.false(output4.includes('\nmodule.exports = "{\\n  \\"name\\": \\"Z\\"\\n}";"D";"C"\n'))
+
+  t.pass()
+})
+
+test('read json with black magic loaders', async (t) => {
+  let mfs3 = await start({
+    entry: [
+      loader('a.js'),
+      '!',
+      loader('b.js') + '?3',
+      '!',
+      file('z.json'),
+    ].join(''),
+  }, 3)
+  let mfs4 = await start({
+    entry: [
+      loader('a.js'),
+      '!',
+      loader('b.js') + '?4',
+      '!',
+      file('z.json'),
+    ].join(''),
+  }, 4)
+  let [ output3, output4 ] = read([mfs3, mfs4])
+
+  t.true(output3.includes('\nmodule.exports = {\n  \"name\": \"Z\"\n};"BLACK MAGIC";"A"\n'), output3)
+  t.true(output4.includes('\nmodule.exports = {\n  \"name\": \"Z\"\n};"BLACK MAGIC";"A"\n'), output4)
 
   t.pass()
 })
